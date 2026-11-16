@@ -149,6 +149,44 @@ public class PedidoToolsService {
         return aDetalle(pedidoRepo.save(pedido));
     }
 
+    @Tool(description = "Cambia el estado de un pedido siguiendo el flujo PENDIENTE -> EN_CAMINO -> ENTREGADO. Para cancelar un pedido use cancelarPedido.")
+    @Transactional
+    public PedidoDetalle actualizarEstadoPedido(
+            @ToolParam(description = "Id del pedido") Long pedidoId,
+            @ToolParam(description = "Nuevo estado: EN_CAMINO o ENTREGADO") String nuevoEstado) {
+        EstadoPedido destino = parseEstado(nuevoEstado);
+
+        if (destino == EstadoPedido.CANCELADO) {
+            throw new IllegalArgumentException("Para cancelar el pedido " + pedidoId + " use la herramienta cancelarPedido");
+        }
+
+        Pedido pedido = obtenerPedido(pedidoId);
+        EstadoPedido actual = pedido.getEstado();
+
+        boolean transicionValida =
+                (actual == EstadoPedido.PENDIENTE && destino == EstadoPedido.EN_CAMINO) ||
+                (actual == EstadoPedido.EN_CAMINO && destino == EstadoPedido.ENTREGADO);
+
+        if (!transicionValida) {
+            throw new IllegalArgumentException("Transición no permitida: " + actual + " -> " + destino);
+        }
+
+        pedido.setEstado(destino);
+        return aDetalle(pedidoRepo.save(pedido));
+    }
+
+    private EstadoPedido parseEstado(String texto) {
+        if (texto == null || texto.isBlank()) {
+            throw new IllegalArgumentException("El estado es obligatorio");
+        }
+        try {
+            return EstadoPedido.valueOf(texto.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Estado inválido: " + texto
+                    + ". Valores permitidos: PENDIENTE, EN_CAMINO, ENTREGADO, CANCELADO");
+        }
+    }
+
     // ---------- Métodos auxiliares ----------
 
     private Pedido obtenerPedido(Long pedidoId) {

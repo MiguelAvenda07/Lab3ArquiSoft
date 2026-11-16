@@ -10,8 +10,6 @@ CREATE DATABASE IF NOT EXISTS lab3
 USE lab3;
 
 -- Crear la base de datos (ejecutar una vez, desde psql conectado a postgres)
--- CREATE DATABASE supermercado;
--- \c supermercado
 
 CREATE TABLE IF NOT EXISTS cliente (
     id         BIGSERIAL PRIMARY KEY,
