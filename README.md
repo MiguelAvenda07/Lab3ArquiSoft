@@ -140,7 +140,3 @@ src/
     └── java/               Pruebas automatizadas
 ```
 
-## Logs
-
-Los logs se escriben en `./logs/labmcp.log`. El nivel de Spring AI está
-configurado como `DEBUG` para facilitar el diagnóstico durante el desarrollo.
